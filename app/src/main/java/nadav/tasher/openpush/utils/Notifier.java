@@ -39,6 +39,7 @@ public abstract class Notifier {
         } else {
             builder = new Notification.Builder(context);
         }
+        builder.setSmallIcon(R.drawable.ic_launcher_foreground);
         builder.setContentTitle(title);
         builder.setContentText(message);
         // Send
