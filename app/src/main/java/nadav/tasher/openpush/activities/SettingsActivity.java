@@ -32,6 +32,8 @@ public class SettingsActivity extends Activity {
         // Create TextView
         TextView view = new TextView(getApplicationContext());
         view.setText("Click here to sign out");
+        view.setTextSize(24);
+        view.setGravity(Gravity.CENTER);
         // Set on click
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,7 +56,8 @@ public class SettingsActivity extends Activity {
         if (resultCode == RESULT_OK) {
             // Get token
             String token = data.getDataString();
-            Log.i("token", token);
+            // Save the token
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putString("token", token).apply();
         }
     }
 }
