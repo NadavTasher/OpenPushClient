@@ -40,8 +40,10 @@ public abstract class Notifier {
             builder = new Notification.Builder(context);
         }
         builder.setSmallIcon(R.drawable.ic_launcher_foreground);
-        builder.setContentTitle(title);
-        builder.setContentText(message);
+        if (title != null)
+            builder.setContentTitle(title);
+        if (message != null)
+            builder.setContentText(message);
         // Send
         manager.notify(new Random().nextInt(), builder.build());
     }

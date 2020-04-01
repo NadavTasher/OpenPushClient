@@ -3,6 +3,7 @@ package nadav.tasher.openpush.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +32,7 @@ public class PullService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         try {
+            Log.i("Here", "Here");
             pullMessages();
         } catch (Exception ignored) {
         }

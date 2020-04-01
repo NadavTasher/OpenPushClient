@@ -21,7 +21,6 @@ public class SettingsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Restart service
-        Starter.stopService(getApplicationContext());
         Starter.startService(getApplicationContext());
         // Create channel
         Notifier.createChannel(getApplicationContext());
