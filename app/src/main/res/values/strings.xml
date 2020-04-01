@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">OpenPush</string>
+
+    <string name="channel_name">Pull</string>
+    <string name="channel_description">Pulled Messages</string>
+
+    <string name="key_server_address">server_address</string>
+    <string name="default_server_address">push.nadav.app</string>
+    <string name="key_pull_rate">pull_rate</string>
+    <string name="default_pull_rate">5</string>
+    <string name="key_pull_enabled">pull_enabled</string>
+    <string name="default_pull_enabled">false</string>
+    <string name="key_authentication_token">authentication_token</string>
+    <string name="default_authentication_token">null</string>
 </resources>
