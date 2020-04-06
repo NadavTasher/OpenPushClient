@@ -2,18 +2,15 @@ package nadav.tasher.openpush.activities;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import nadav.tasher.openpush.R;
-import nadav.tasher.openpush.utils.Notifier;
-import nadav.tasher.openpush.utils.Starter;
+import nadav.tasher.openpush.services.PullService;
 
 public class SettingsActivity extends Activity {
 
@@ -21,9 +18,7 @@ public class SettingsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Restart service
-        Starter.startService(this);
-        // Create channel
-        Notifier.createChannel(getApplicationContext());
+        startForegroundService(new Intent(this, PullService.class));
         // Create and show layout
         LinearLayout layout = new LinearLayout(getApplicationContext());
         layout.setOrientation(LinearLayout.VERTICAL);

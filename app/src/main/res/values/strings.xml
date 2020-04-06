@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">OpenPush</string>
 
-    <string name="channel_name">Pull</string>
-    <string name="channel_description">Pulled Messages</string>
+    <string name="channel_pull">Pull</string>
+    <string name="channel_foreground">Foreground</string>
 
     <string name="address">https://push.nadav.app</string>
 </resources>
