@@ -1,7 +1,9 @@
 package nadav.tasher.openpush.services;
 
 import android.app.IntentService;
+import android.app.Service;
 import android.content.Intent;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -13,6 +15,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import nadav.tasher.openpush.R;
 import nadav.tasher.openpush.utils.Notifier;
@@ -23,19 +27,27 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class PullService extends IntentService {
+public class PullService extends Service {
 
-    public PullService() {
-        super(PullService.class.getSimpleName());
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Start the timer
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    pullMessages();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 0, 1000 * 30);
+        return START_STICKY;
     }
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        try {
-            Log.i("Here", "Here");
-            pullMessages();
-        } catch (Exception ignored) {
-        }
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     private void pullMessages() throws JSONException {
@@ -99,4 +111,5 @@ public class PullService extends IntentService {
             }
         });
     }
+
 }
