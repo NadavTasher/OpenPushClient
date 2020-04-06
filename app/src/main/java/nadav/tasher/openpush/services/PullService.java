@@ -106,10 +106,10 @@ public class PullService extends Service {
         // Set icon
         builder.setSmallIcon(R.drawable.ic_launcher_foreground);
         // Set time
+        builder.setShowWhen(true);
+        // Set secret
         if (importance == NotificationManager.IMPORTANCE_NONE) {
             builder.setVisibility(Notification.VISIBILITY_SECRET);
-        } else {
-            builder.setShowWhen(true);
         }
         // Set text
         if (title != null) builder.setContentTitle(title);
