@@ -21,7 +21,7 @@ public class SettingsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Restart service
-        Starter.startService(getApplicationContext());
+        Starter.startService(this);
         // Create channel
         Notifier.createChannel(getApplicationContext());
         // Create and show layout

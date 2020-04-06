@@ -30,18 +30,22 @@ import okhttp3.Response;
 public class PullService extends Service {
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public void onCreate() {
         // Start the timer
         new Timer().scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 try {
                     pullMessages();
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-        }, 0, 1000 * 30);
+        }, 0, 1000 * 60 * 5);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
         return START_STICKY;
     }
 
@@ -50,66 +54,8 @@ public class PullService extends Service {
         return null;
     }
 
-    private void pullMessages() throws JSONException {
-        // Fetch token
-        String token = PreferenceManager.getDefaultSharedPreferences(this).getString("token", null);
-        // Build client
-        OkHttpClient client = new OkHttpClient.Builder().connectionSpecs(Arrays.asList(ConnectionSpec.RESTRICTED_TLS, ConnectionSpec.MODERN_TLS)).build();
-        // Build the API list
-        JSONObject APIs = new JSONObject();
-        // Add the pull API
-        JSONObject pullAPI = new JSONObject();
-        pullAPI.put("action", null);
-        pullAPI.put("parameters", null);
-        APIs.put("pull", pullAPI);
-        // Add the authenticate API
-        JSONObject authenticateAPI = new JSONObject();
-        authenticateAPI.put("action", "authenticate");
-        authenticateAPI.put("parameters", new JSONObject().put("token", token));
-        APIs.put("authenticate", authenticateAPI);
-        // Create the request
-        Request request = new Request.Builder().url(getResources().getString(R.string.address) + "/apis/pull/").post(new FormBody.Builder().add("api", APIs.toString()).build()).build();
-        // Send the request
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
-            }
+    private void pullMessages() throws Exception {
 
-            @Override
-            public void onResponse(@NotNull okhttp3.Call call, @NotNull Response response) throws IOException {
-                // Parse response
-                try {
-                    // Decode JSON
-                    JSONObject object = new JSONObject(response.body().string());
-                    if (object.has("pull")) {
-                        // Store the layer
-                        JSONObject layer = object.getJSONObject("pull");
-                        // Validate structure
-                        if (layer.has("success") && layer.has("result")) {
-                            boolean success = layer.getBoolean("success");
-                            Object result = layer.get("result");
-                            // Check success
-                            if (success) {
-                                JSONArray array = (JSONArray) result;
-                                // Loop over
-                                for (int i = 0; i < array.length(); i++) {
-                                    JSONObject jsonMessage = array.getJSONObject(i);
-                                    // Store title and message
-                                    String title = jsonMessage.getString("title");
-                                    String message = jsonMessage.getString("message");
-                                    // Send notification
-                                    Notifier.createNotification(PullService.this, title, message);
-                                }
-                            } else {
-                                // Notify failure
-                                Notifier.createNotification(PullService.this, "Error", (String) result);
-                            }
-                        }
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-        });
     }
 
 }

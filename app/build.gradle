@@ -25,4 +25,5 @@ android {
 
 dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.4.0'
+    implementation 'com.evernote:android-job:1.4.2'
 }

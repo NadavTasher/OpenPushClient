@@ -9,6 +9,8 @@ import nadav.tasher.openpush.utils.Starter;
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Starter.startService(context.getApplicationContext());
+        if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+            Starter.startService(context);
+        }
     }
 }
