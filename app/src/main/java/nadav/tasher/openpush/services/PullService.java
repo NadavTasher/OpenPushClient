@@ -38,7 +38,7 @@ public class PullService extends Service {
             public void run() {
                 pullMessages();
             }
-        }, 1000, 1000 * 60 * 1);
+        }, 1000, 1000 * 60 * 5);
         return START_NOT_STICKY;
     }
 
