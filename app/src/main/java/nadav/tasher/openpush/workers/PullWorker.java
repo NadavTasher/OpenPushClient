@@ -64,8 +64,7 @@ public class PullWorker extends Worker {
                             String title = jsonMessage.getString("title");
                             String message = jsonMessage.getString("message");
                             // Send notification
-                            NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-                            manager.notify(new Random().nextInt(), buildNotification(title, message, getApplicationContext().getResources().getString(R.string.channel_pull)));
+                            sendNotification(title, message);
                         }
                     }
                 }
@@ -76,29 +75,31 @@ public class PullWorker extends Worker {
         }
     }
 
-    private Notification buildNotification(String title, String message, String channel) {
-        // Create builder
-        Notification.Builder builder = new Notification.Builder(getApplicationContext(), createChannel(channel));
-        // Set icon
-        builder.setSmallIcon(R.drawable.ic_launcher_foreground);
-        // Set time
-        builder.setShowWhen(true);
-        // Set text
-        if (title != null && !title.equals("null"))
-            builder.setContentTitle(title);
-        if (message != null && !message.equals("null"))
-            builder.setContentText(message);
-        // Build and return
-        return builder.build();
-    }
-
-    private String createChannel(String id) {
-        // Manager
+    private void sendNotification(String title, String message) {
+        // Retrieve channel name
+        String name = getApplicationContext().getResources().getString(R.string.channel);
+        // Create a notification manager
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        // Create channel
-        manager.createNotificationChannel(new NotificationChannel(id, id, NotificationManager.IMPORTANCE_HIGH));
-        // Return the ID
-        return id;
+        // Make sure we have access
+        if (manager != null) {
+            // Create channel
+            manager.createNotificationChannel(new NotificationChannel(name, name, NotificationManager.IMPORTANCE_HIGH));
+            // Create builder
+            Notification.Builder builder = new Notification.Builder(getApplicationContext(), name);
+            // Set icon
+            builder.setSmallIcon(R.drawable.ic_launcher_foreground);
+            // Set time
+            builder.setShowWhen(true);
+            // Set text
+            if (title != null && !title.equals("null")) {
+                builder.setContentTitle(title);
+            }
+            if (message != null && !message.equals("null")) {
+                builder.setContentText(message);
+            }
+            // Build and send
+            manager.notify(new Random().nextInt(), builder.build());
+        }
     }
 
     public static void enqueueWork(Context context) {
