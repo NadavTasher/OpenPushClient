@@ -30,7 +30,7 @@ public class PullService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Start foreground
-        startForeground(1, buildNotification("Idle pull service", null, getApplicationContext().getResources().getString(R.string.channel_foreground), NotificationManager.IMPORTANCE_NONE));
+        startForeground(1, buildNotification(null, "Idle pull service", getApplicationContext().getResources().getString(R.string.channel_foreground), NotificationManager.IMPORTANCE_NONE));
         // Start a timer
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
