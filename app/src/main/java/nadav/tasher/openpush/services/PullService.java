@@ -51,48 +51,32 @@ public class PullService extends Service {
             if (token != null) {
                 // Build client
                 OkHttpClient client = new OkHttpClient.Builder().connectionSpecs(Arrays.asList(ConnectionSpec.RESTRICTED_TLS, ConnectionSpec.MODERN_TLS)).build();
-                // Build the API list
-                JSONObject APIs = new JSONObject();
-                // Add the pull API
-                JSONObject pullAPI = new JSONObject();
-                pullAPI.put("action", null);
-                pullAPI.put("parameters", null);
-                APIs.put("pull", pullAPI);
-                // Add the authenticate API
-                JSONObject authenticateAPI = new JSONObject();
-                authenticateAPI.put("action", "authenticate");
-                authenticateAPI.put("parameters", new JSONObject().put("token", token));
-                APIs.put("authenticate", authenticateAPI);
                 // Create the request
-                Request request = new Request.Builder().url(getApplicationContext().getResources().getString(R.string.address) + "/apis/pull/").post(new FormBody.Builder().add("api", APIs.toString()).build()).build();
+                Request request = new Request.Builder().url(getApplicationContext().getResources().getString(R.string.address) + "/apis/pull/?null&token=" + token).get().build();
                 // Send the request
                 Response response = client.newCall(request).execute();
                 // Parse response
                 // Decode JSON
                 JSONObject object = new JSONObject(response.body().string());
-                if (object.has("pull")) {
-                    // Store the layer
-                    JSONObject layer = object.getJSONObject("pull");
-                    // Validate structure
-                    if (layer.has("success") && layer.has("result")) {
-                        boolean success = layer.getBoolean("success");
-                        Object result = layer.get("result");
-                        // Check success
-                        if (success) {
-                            JSONArray array = (JSONArray) result;
-                            // Loop over
-                            for (int i = 0; i < array.length(); i++) {
-                                JSONObject jsonMessage = array.getJSONObject(i);
-                                // Store title and message
-                                String title = jsonMessage.getString("title");
-                                String message = jsonMessage.getString("message");
-                                // Send notification
-                                sendNotification(title, message);
-                            }
-                        } else {
-                            // Notify failure
-                            sendNotification("Error", (String) result);
+                // Validate structure
+                if (object.has("status") && object.has("result")) {
+                    boolean success = object.getBoolean("status");
+                    Object result = object.get("result");
+                    // Check success
+                    if (success) {
+                        JSONArray array = (JSONArray) result;
+                        // Loop over
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject jsonMessage = array.getJSONObject(i);
+                            // Store title and message
+                            String title = jsonMessage.getString("title");
+                            String message = jsonMessage.getString("message");
+                            // Send notification
+                            sendNotification(title, message);
                         }
+                    } else {
+                        // Notify failure
+                        sendNotification("Error", (String) result);
                     }
                 }
             }
@@ -112,8 +96,10 @@ public class PullService extends Service {
             builder.setVisibility(Notification.VISIBILITY_SECRET);
         }
         // Set text
-        if (title != null) builder.setContentTitle(title);
-        if (message != null) builder.setContentText(message);
+        if (title != null && !title.equals("null"))
+            builder.setContentTitle(title);
+        if (message != null && !message.equals("null"))
+            builder.setContentText(message);
         // Build and return
         return builder.build();
     }
