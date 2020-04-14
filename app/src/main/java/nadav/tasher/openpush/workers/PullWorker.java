@@ -1,48 +1,41 @@
-package nadav.tasher.openpush.services;
+package nadav.tasher.openpush.workers;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.os.IBinder;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.NonNull;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.Worker;
+import androidx.work.WorkerParameters;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import nadav.tasher.openpush.R;
 import okhttp3.ConnectionSpec;
-import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class PullService extends Service {
+public class PullWorker extends Worker {
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        // Start foreground
-        startForeground(1, buildNotification(null, "Idle pull service", getApplicationContext().getResources().getString(R.string.channel_foreground), NotificationManager.IMPORTANCE_NONE));
-        // Start a timer
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                pullMessages();
-            }
-        }, 1000, 1000 * 60 * 5);
-        return START_NOT_STICKY;
+    public PullWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
     }
 
-    private void pullMessages() {
+    @NonNull
+    @Override
+    public Result doWork() {
         // Fetch notifications
         try {
             // Fetch token
@@ -55,7 +48,6 @@ public class PullService extends Service {
                 Request request = new Request.Builder().url(getApplicationContext().getResources().getString(R.string.address) + "/apis/pull/?null&token=" + token).get().build();
                 // Send the request
                 Response response = client.newCall(request).execute();
-                // Parse response
                 // Decode JSON
                 JSONObject object = new JSONObject(response.body().string());
                 // Validate structure
@@ -72,29 +64,25 @@ public class PullService extends Service {
                             String title = jsonMessage.getString("title");
                             String message = jsonMessage.getString("message");
                             // Send notification
-                            sendNotification(title, message);
+                            NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                            manager.notify(new Random().nextInt(), buildNotification(title, message, getApplicationContext().getResources().getString(R.string.channel_pull)));
                         }
-                    } else {
-                        // Notify failure
-                        sendNotification("Error", (String) result);
                     }
                 }
             }
+            return Result.success();
         } catch (Exception ignored) {
+            return Result.failure();
         }
     }
 
-    private Notification buildNotification(String title, String message, String channel, int importance) {
+    private Notification buildNotification(String title, String message, String channel) {
         // Create builder
-        Notification.Builder builder = new Notification.Builder(getApplicationContext(), createChannel(channel, importance));
+        Notification.Builder builder = new Notification.Builder(getApplicationContext(), createChannel(channel));
         // Set icon
         builder.setSmallIcon(R.drawable.ic_launcher_foreground);
         // Set time
         builder.setShowWhen(true);
-        // Set secret
-        if (importance == NotificationManager.IMPORTANCE_NONE) {
-            builder.setVisibility(Notification.VISIBILITY_SECRET);
-        }
         // Set text
         if (title != null && !title.equals("null"))
             builder.setContentTitle(title);
@@ -104,27 +92,18 @@ public class PullService extends Service {
         return builder.build();
     }
 
-    private String createChannel(String id, int importance) {
+    private String createChannel(String id) {
         // Manager
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         // Create channel
-        manager.createNotificationChannel(new NotificationChannel(id, id, importance));
+        manager.createNotificationChannel(new NotificationChannel(id, id, NotificationManager.IMPORTANCE_HIGH));
         // Return the ID
         return id;
     }
 
-    private void sendNotification(String title, String message) {
-        // Fetch resources
-        String name = getApplicationContext().getResources().getString(R.string.channel_pull);
-        // Manager
-        NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        // Send
-        manager.notify(new Random().nextInt(), buildNotification(title, message, name, NotificationManager.IMPORTANCE_DEFAULT));
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+    public static void enqueueWork(Context context) {
+        WorkManager workManager = WorkManager.getInstance(context);
+        workManager.cancelAllWork();
+        workManager.enqueue(new PeriodicWorkRequest.Builder(PullWorker.class, 15, TimeUnit.MINUTES).setInitialDelay(1, TimeUnit.MINUTES).setConstraints(new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()).build());
     }
 }

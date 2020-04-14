@@ -24,5 +24,6 @@ android {
 }
 
 dependencies {
-    implementation 'com.squareup.okhttp3:okhttp:4.4.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.5.0'
+    implementation 'androidx.work:work-runtime:2.3.4'
 }

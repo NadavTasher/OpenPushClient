@@ -10,15 +10,13 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import nadav.tasher.openpush.services.PullService;
+import nadav.tasher.openpush.workers.PullWorker;
 
 public class SettingsActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Restart service
-        startForegroundService(new Intent(this, PullService.class));
         // Create and show layout
         LinearLayout layout = new LinearLayout(getApplicationContext());
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -52,6 +50,8 @@ public class SettingsActivity extends Activity {
             String token = data.getDataString();
             // Save the token
             PreferenceManager.getDefaultSharedPreferences(this).edit().putString("token", token).apply();
+            // Schedule work
+            PullWorker.enqueueWork(getApplicationContext());
         }
     }
 }
